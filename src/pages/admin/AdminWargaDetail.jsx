@@ -65,7 +65,8 @@ export default function AdminWargaDetail() {
       status_perkawinan: form.status_perkawinan,
       pekerjaan: form.pekerjaan,
       hubungan_keluarga: form.hubungan_keluarga,
-      no_telepon: form.no_telepon
+      no_telepon: form.no_telepon,
+      role: form.role
     }).eq('id', id)
     setSaving(false)
     if (updErr) { setMessage('Gagal menyimpan: ' + updErr.message); return }
@@ -108,6 +109,24 @@ export default function AdminWargaDetail() {
     if (!urlErr && data?.signedUrl) window.open(data.signedUrl, '_blank', 'noopener')
   }
 
+  async function handleResetPassword() {
+    if (!window.confirm(`Apakah Anda yakin ingin mengatur ulang kata sandi ${profile.nama_lengkap} ke default (NIK: ${profile.nik})?`)) {
+      return
+    }
+    setSaving(true)
+    setMessage('')
+    const { data, error: rpcErr } = await supabase.rpc('admin_reset_user_password', {
+      user_id: id,
+      new_password: profile.nik
+    })
+    setSaving(false)
+    if (rpcErr) {
+      setMessage('Gagal mereset kata sandi: ' + rpcErr.message)
+    } else {
+      setMessage('Kata sandi berhasil direset ke default (NIK).')
+    }
+  }
+
   if (loading) {
     return (
       <div className="app-shell">
@@ -143,13 +162,19 @@ export default function AdminWargaDetail() {
           </div>
           <p className="muted">NIK {profile.nik} · No. KK {profile.no_kk}</p>
 
-          {message && <div className="alert success">{message}</div>}
+          {message && (
+            <div className={`alert ${message.startsWith('Gagal') ? 'error' : 'success'}`}>
+              {message}
+            </div>
+          )}
 
-          <div className="row">
-            <button className="btn" disabled={saving || profile.status_verifikasi === 'verified'}
+          <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+            <button className="btn small" disabled={saving || profile.status_verifikasi === 'verified'}
               onClick={() => handleSetStatus('verified')}>Verifikasi Warga</button>
-            <button className="btn danger" disabled={saving || profile.status_verifikasi === 'rejected'}
+            <button className="btn danger small" disabled={saving || profile.status_verifikasi === 'rejected'}
               onClick={() => handleSetStatus('rejected')}>Tolak</button>
+            <button className="btn secondary small" disabled={saving}
+              onClick={handleResetPassword}>🔑 Reset Password ke NIK</button>
           </div>
         </div>
 
@@ -250,6 +275,13 @@ export default function AdminWargaDetail() {
           <div className="field">
             <label>No. Telepon</label>
             <input value={form.no_telepon || ''} onChange={(e) => update('no_telepon', e.target.value)} />
+          </div>
+          <div className="field">
+            <label>Peran (Role)</label>
+            <select value={form.role || 'warga'} onChange={(e) => update('role', e.target.value)}>
+              <option value="warga">Warga</option>
+              <option value="admin">Admin</option>
+            </select>
           </div>
           <button className="btn" type="submit" disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan Perubahan'}</button>
         </form>

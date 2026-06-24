@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
 import StatusBadge from '../../components/StatusBadge'
 
@@ -133,6 +134,16 @@ export default function ProfilTab({ profile, onUpdated }) {
             <div className="list-item"><span className="muted">No. Telepon</span><span>{profile.no_telepon || '-'}</span></div>
           </div>
         )}
+      </div>
+
+      <div className="card" style={{ marginTop: 14 }}>
+        <h3>Pengaturan Keamanan</h3>
+        <p className="muted" style={{ fontSize: '12.5px', marginBottom: 12 }}>
+          Ubah password akun Anda secara berkala demi menjaga keamanan data pribadi Anda.
+        </p>
+        <Link to="/ganti-password" style={{ textDecoration: 'none' }}>
+          <button className="btn secondary">🔑 Ganti Password</button>
+        </Link>
       </div>
     </div>
   )

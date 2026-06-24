@@ -450,3 +450,166 @@ create trigger trg_sync_profile_nik_to_auth_email
 --
 -- Setelah ini, admin login di halaman /login dengan NIK "0000000000000001"
 -- dan password yang ditentukan di langkah 1.
+
+
+-- ---------------------------------------------------------
+-- 7. FUNGSI ADMIN TAMBAHAN (RESET PASSWORD & DAFTAR MANUAL)
+-- ---------------------------------------------------------
+
+-- Function untuk Reset Password Warga ke NIK
+create or replace function public.admin_reset_user_password(
+  user_id uuid,
+  new_password text
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = public, auth, extensions
+as $$
+begin
+  -- Pastikan hanya admin yang bisa memanggil
+  if not public.is_admin() then
+    raise exception 'Hanya admin yang dapat menyetel ulang password.';
+  end if;
+
+  -- Update password di auth.users menggunakan bcrypt
+  update auth.users
+  set encrypted_password = crypt(new_password, gen_salt('bf', 10)),
+      updated_at = now()
+  where id = user_id;
+
+  -- Reset status agar warga wajib ganti password saat login berikutnya
+  update public.profiles
+  set sudah_ganti_password = false
+  where id = user_id;
+
+  return true;
+end;
+$$;
+
+-- Function untuk Mendaftarkan Warga Secara Manual (Tanpa SignUp Klien)
+create or replace function public.admin_create_warga_manual(
+  p_nik varchar(16),
+  p_no_kk varchar(16),
+  p_nama_lengkap text,
+  p_jenis_kelamin text,
+  p_tempat_lahir text,
+  p_tanggal_lahir date,
+  p_alamat text,
+  p_rt text,
+  p_rw text,
+  p_agama text,
+  p_status_perkawinan text,
+  p_pekerjaan text,
+  p_hubungan_keluarga text,
+  p_no_telepon text,
+  p_email_domain text
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public, auth, extensions
+as $$
+declare
+  v_user_id uuid;
+  v_email text;
+  v_encrypted_password text;
+begin
+  -- Pastikan hanya admin yang bisa memanggil
+  if not public.is_admin() then
+    raise exception 'Hanya admin yang dapat mendaftarkan warga secara manual.';
+  end if;
+
+  -- Format email semu
+  v_email := p_nik || '@' || p_email_domain;
+
+  -- Validasi keunikan NIK di profiles
+  if exists (select 1 from public.profiles where nik = p_nik) then
+    raise exception 'NIK % sudah terdaftar.', p_nik;
+  end if;
+
+  -- Validasi keunikan email di auth.users
+  if exists (select 1 from auth.users where email = v_email) then
+    raise exception 'Email % sudah terdaftar di sistem auth.', v_email;
+  end if;
+
+  -- Generate default password = NIK
+  v_encrypted_password := crypt(p_nik, gen_salt('bf', 10));
+
+  -- Insert ke auth.users
+  insert into auth.users (
+    id,
+    instance_id,
+    email,
+    encrypted_password,
+    email_confirmed_at,
+    role,
+    aud,
+    raw_app_meta_data,
+    raw_user_meta_data,
+    created_at,
+    updated_at,
+    is_sso_user
+  )
+  values (
+    gen_random_uuid(),
+    '00000000-0000-0000-0000-000000000000',
+    v_email,
+    v_encrypted_password,
+    now(),
+    'authenticated',
+    'authenticated',
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{}'::jsonb,
+    now(),
+    now(),
+    false
+  )
+  returning id into v_user_id;
+
+  -- Insert ke profiles langsung sebagai VERIFIED
+  insert into public.profiles (
+    id,
+    nik,
+    no_kk,
+    nama_lengkap,
+    jenis_kelamin,
+    tempat_lahir,
+    tanggal_lahir,
+    alamat,
+    rt,
+    rw,
+    agama,
+    status_perkawinan,
+    pekerjaan,
+    hubungan_keluarga,
+    no_telepon,
+    role,
+    status_verifikasi,
+    sudah_ganti_password
+  )
+  values (
+    v_user_id,
+    p_nik,
+    p_no_kk,
+    p_nama_lengkap,
+    p_jenis_kelamin,
+    p_tempat_lahir,
+    p_tanggal_lahir,
+    p_alamat,
+    p_rt,
+    p_rw,
+    p_agama,
+    p_status_perkawinan,
+    p_pekerjaan,
+    p_hubungan_keluarga,
+    p_no_telepon,
+    'warga',
+    'verified',
+    false
+  );
+
+  return v_user_id;
+end;
+$$;
+

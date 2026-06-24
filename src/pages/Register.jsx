@@ -4,8 +4,8 @@ import { supabase } from '../lib/supabaseClient'
 import { isValidNIK, isValidNoKK, isValidPhone, nikToAuthEmail } from '../utils/validators'
 
 const emptyForm = {
-  nik: '',
   no_kk: '',
+  nik: '',
   nama_lengkap: '',
   jenis_kelamin: 'Laki-laki',
   tempat_lahir: '',
@@ -32,8 +32,8 @@ export default function Register() {
   }
 
   function validate() {
-    if (!isValidNIK(form.nik)) return 'NIK harus 16 digit angka.'
     if (!isValidNoKK(form.no_kk)) return 'Nomor KK harus 16 digit angka.'
+    if (!isValidNIK(form.nik)) return 'NIK harus 16 digit angka.'
     if (!form.nama_lengkap.trim()) return 'Nama lengkap wajib diisi.'
     if (!form.tanggal_lahir) return 'Tanggal lahir wajib diisi.'
     if (!form.alamat.trim()) return 'Alamat wajib diisi.'
@@ -97,8 +97,8 @@ export default function Register() {
 
     const { error: profileError } = await supabase.from('profiles').insert({
       id: userId,
-      nik: form.nik,
       no_kk: form.no_kk,
+      nik: form.nik,
       nama_lengkap: form.nama_lengkap.trim(),
       jenis_kelamin: form.jenis_kelamin,
       tempat_lahir: form.tempat_lahir.trim(),
@@ -144,15 +144,15 @@ export default function Register() {
 
       <form onSubmit={handleSubmit} className="card">
         <div className="field">
-          <label>NIK (16 digit)</label>
-          <input inputMode="numeric" maxLength={16} value={form.nik}
-            onChange={(e) => update('nik', e.target.value.replace(/\D/g, ''))} />
-        </div>
-        <div className="field">
           <label>Nomor Kartu Keluarga (16 digit)</label>
           <input inputMode="numeric" maxLength={16} value={form.no_kk}
             onChange={(e) => update('no_kk', e.target.value.replace(/\D/g, ''))} />
           <small>Warga dengan No. KK yang sama akan terhubung sebagai satu keluarga.</small>
+        </div>
+        <div className="field">
+          <label>NIK (16 digit)</label>
+          <input inputMode="numeric" maxLength={16} value={form.nik}
+            onChange={(e) => update('nik', e.target.value.replace(/\D/g, ''))} />
         </div>
         <div className="field">
           <label>Nama Lengkap</label>
