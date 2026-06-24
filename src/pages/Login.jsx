@@ -46,7 +46,7 @@ export default function Login() {
           <div className="brand-mark">SW</div>
           <div>
             <h1 style={{ marginBottom: 0 }}>SIWARGA</h1>
-            <p className="muted" style={{ margin: 0 }}>Sistem Informasi Warga</p>
+            <p className="muted" style={{ margin: 0 }}>Permata Jaya Krian</p>
           </div>
         </div>
 
@@ -91,6 +91,11 @@ export default function Login() {
 
         <p className="muted" style={{ textAlign: 'center' }}>
           Belum punya akun? <Link to="/daftar">Daftar sebagai warga</Link>
+        </p>
+        <p style={{ textAlign: 'center', marginTop: 24, color: 'var(--ink-soft)', fontSize: '11.5px' }}>
+          SIWARGA — Permata Jaya Krian &nbsp;·&nbsp; &copy; {new Date().getFullYear()}{' '}
+          <a href="https://github.com/NiceGuy99" target="_blank" rel="noopener noreferrer"
+            style={{ color: 'inherit', textDecoration: 'underline' }}>NiceGuy99</a>
         </p>
       </div>
     </div>

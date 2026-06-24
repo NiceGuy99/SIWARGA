@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../contexts/AuthContext'
+import AppFooter from '../components/AppFooter'
 
 export default function ChangePassword() {
   const { profile, refreshProfile, signOut } = useAuth()
@@ -55,49 +56,52 @@ export default function ChangePassword() {
   }
 
   return (
-    <div className="center-screen">
-      <div style={{ width: '100%', maxWidth: 380 }}>
-        <div className="card">
-          <h2>{isFirstLogin ? 'Lengkapi Keamanan Akun' : 'Ganti Password'}</h2>
-          {isFirstLogin && (
-            <div className="alert info">
-              Ini adalah login pertama Anda. Untuk keamanan, password (yang saat ini
-              sama dengan NIK) wajib diganti terlebih dahulu.
-            </div>
-          )}
-          {error && <div className="alert error">{error}</div>}
+    <>
+      <div className="center-screen">
+        <div style={{ width: '100%', maxWidth: 380 }}>
+          <div className="card">
+            <h2>{isFirstLogin ? 'Lengkapi Keamanan Akun' : 'Ganti Password'}</h2>
+            {isFirstLogin && (
+              <div className="alert info">
+                Ini adalah login pertama Anda. Untuk keamanan, password (yang saat ini
+                sama dengan NIK) wajib diganti terlebih dahulu.
+              </div>
+            )}
+            {error && <div className="alert error">{error}</div>}
 
-          <form onSubmit={handleSubmit}>
-            <div className="field">
-              <label>Password Baru</label>
-              <input type="password" autoComplete="new-password" value={password}
-                onChange={(e) => setPassword(e.target.value)} />
-              <small>Minimal 8 karakter, jangan gunakan NIK.</small>
-            </div>
-            <div className="field">
-              <label>Konfirmasi Password Baru</label>
-              <input type="password" autoComplete="new-password" value={confirm}
-                onChange={(e) => setConfirm(e.target.value)} />
-            </div>
-            <button className="btn" type="submit" disabled={submitting}>
-              {submitting ? 'Menyimpan...' : 'Simpan Password Baru'}
-            </button>
-          </form>
+            <form onSubmit={handleSubmit}>
+              <div className="field">
+                <label>Password Baru</label>
+                <input type="password" autoComplete="new-password" value={password}
+                  onChange={(e) => setPassword(e.target.value)} />
+                <small>Minimal 8 karakter, jangan gunakan NIK.</small>
+              </div>
+              <div className="field">
+                <label>Konfirmasi Password Baru</label>
+                <input type="password" autoComplete="new-password" value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)} />
+              </div>
+              <button className="btn" type="submit" disabled={submitting}>
+                {submitting ? 'Menyimpan...' : 'Simpan Password Baru'}
+              </button>
+            </form>
 
-          {!isFirstLogin && (
-            <>
-              <div className="spacer" />
-              <button className="btn secondary" onClick={() => navigate(-1)}>Batal</button>
-            </>
-          )}
-          {isFirstLogin && (
-            <>
-              <div className="spacer" />
-              <button className="btn secondary" onClick={signOut}>Keluar</button>
-            </>
-          )}
+            {!isFirstLogin && (
+              <>
+                <div className="spacer" />
+                <button className="btn secondary" onClick={() => navigate(-1)}>Batal</button>
+              </>
+            )}
+            {isFirstLogin && (
+              <>
+                <div className="spacer" />
+                <button className="btn secondary" onClick={signOut}>Keluar</button>
+              </>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+      <AppFooter />
+    </>
   )
 }

@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { supabase, DOKUMEN_BUCKET } from '../../lib/supabaseClient'
 import TopBar from '../../components/TopBar'
 import StatusBadge from '../../components/StatusBadge'
+import AppFooter from '../../components/AppFooter'
 
 const JENIS_LABEL = { ktp: 'KTP', kk: 'Kartu Keluarga' }
 
@@ -286,6 +287,7 @@ export default function AdminWargaDetail() {
           <button className="btn" type="submit" disabled={saving}>{saving ? 'Menyimpan...' : 'Simpan Perubahan'}</button>
         </form>
       </div>
+      <AppFooter />
     </div>
   )
 }

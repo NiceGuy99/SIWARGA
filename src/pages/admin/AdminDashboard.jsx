@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase, DOKUMEN_BUCKET } from '../../lib/supabaseClient'
 import TopBar from '../../components/TopBar'
 import StatusBadge from '../../components/StatusBadge'
+import AppFooter from '../../components/AppFooter'
 
 const PAGE_SIZE = 15
 
@@ -679,6 +680,7 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+      <AppFooter />
     </div>
   )
 }

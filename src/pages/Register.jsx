@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { isValidNIK, isValidNoKK, isValidPhone, nikToAuthEmail } from '../utils/validators'
+import AppFooter from '../components/AppFooter'
 
 const emptyForm = {
   no_kk: '',
@@ -132,120 +133,124 @@ export default function Register() {
   }
 
   return (
-    <div className="container" style={{ paddingTop: 24, paddingBottom: 32 }}>
-      <h1>Daftar Warga Baru</h1>
-      <p className="muted">
-        Data Anda akan diverifikasi oleh admin RT/RW setelah pendaftaran.
-        Password awal Anda otomatis sama dengan NIK.
-      </p>
-      <div className="spacer" />
+    <>
+      <div className="container" style={{ paddingTop: 24, paddingBottom: 32 }}>
+        <h1>Daftar Warga Baru</h1>
+        <p className="muted">
+          Data Anda akan diverifikasi oleh admin RT/RW setelah pendaftaran.
+          Password awal Anda otomatis sama dengan NIK.
+        </p>
+        <div className="spacer" />
 
-      {error && <div className="alert error">{error}</div>}
+        {error && <div className="alert error">{error}</div>}
 
-      <form onSubmit={handleSubmit} className="card">
-        <div className="field">
-          <label>Nomor Kartu Keluarga (16 digit)</label>
-          <input inputMode="numeric" maxLength={16} value={form.no_kk}
-            onChange={(e) => update('no_kk', e.target.value.replace(/\D/g, ''))} />
-          <small>Warga dengan No. KK yang sama akan terhubung sebagai satu keluarga.</small>
-        </div>
-        <div className="field">
-          <label>NIK (16 digit)</label>
-          <input inputMode="numeric" maxLength={16} value={form.nik}
-            onChange={(e) => update('nik', e.target.value.replace(/\D/g, ''))} />
-        </div>
-        <div className="field">
-          <label>Nama Lengkap</label>
-          <input value={form.nama_lengkap} onChange={(e) => update('nama_lengkap', e.target.value)} />
-        </div>
-
-        <div className="row">
+        <form onSubmit={handleSubmit} className="card">
           <div className="field">
-            <label>Jenis Kelamin</label>
-            <select value={form.jenis_kelamin} onChange={(e) => update('jenis_kelamin', e.target.value)}>
-              <option>Laki-laki</option>
-              <option>Perempuan</option>
-            </select>
+            <label>Nomor Kartu Keluarga (16 digit)</label>
+            <input inputMode="numeric" maxLength={16} value={form.no_kk}
+              onChange={(e) => update('no_kk', e.target.value.replace(/\D/g, ''))} />
+            <small>Warga dengan No. KK yang sama akan terhubung sebagai satu keluarga.</small>
           </div>
           <div className="field">
-            <label>Hubungan dalam KK</label>
-            <select value={form.hubungan_keluarga} onChange={(e) => update('hubungan_keluarga', e.target.value)}>
-              <option>Kepala Keluarga</option>
-              <option>Istri</option>
-              <option>Anak</option>
-              <option>Famili Lain</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="row">
-          <div className="field">
-            <label>Tempat Lahir</label>
-            <input value={form.tempat_lahir} onChange={(e) => update('tempat_lahir', e.target.value)} />
+            <label>NIK (16 digit)</label>
+            <input inputMode="numeric" maxLength={16} value={form.nik}
+              onChange={(e) => update('nik', e.target.value.replace(/\D/g, ''))} />
           </div>
           <div className="field">
-            <label>Tanggal Lahir</label>
-            <input type="date" value={form.tanggal_lahir} onChange={(e) => update('tanggal_lahir', e.target.value)} />
+            <label>Nama Lengkap</label>
+            <input value={form.nama_lengkap} onChange={(e) => update('nama_lengkap', e.target.value)} />
           </div>
-        </div>
 
-        <div className="field">
-          <label>Alamat</label>
-          <textarea rows={2} value={form.alamat} onChange={(e) => update('alamat', e.target.value)} />
-        </div>
+          <div className="row">
+            <div className="field">
+              <label>Jenis Kelamin</label>
+              <select value={form.jenis_kelamin} onChange={(e) => update('jenis_kelamin', e.target.value)}>
+                <option>Laki-laki</option>
+                <option>Perempuan</option>
+              </select>
+            </div>
+            <div className="field">
+              <label>Hubungan dalam KK</label>
+              <select value={form.hubungan_keluarga} onChange={(e) => update('hubungan_keluarga', e.target.value)}>
+                <option>Kepala Keluarga</option>
+                <option>Istri</option>
+                <option>Anak</option>
+                <option>Famili Lain</option>
+              </select>
+            </div>
+          </div>
 
-        <div className="row">
+          <div className="row">
+            <div className="field">
+              <label>Tempat Lahir</label>
+              <input value={form.tempat_lahir} onChange={(e) => update('tempat_lahir', e.target.value)} />
+            </div>
+            <div className="field">
+              <label>Tanggal Lahir</label>
+              <input type="date" value={form.tanggal_lahir} onChange={(e) => update('tanggal_lahir', e.target.value)} />
+            </div>
+          </div>
+
           <div className="field">
-            <label>RT</label>
-            <input value={form.rt} onChange={(e) => update('rt', e.target.value)} />
+            <label>Alamat</label>
+            <textarea rows={2} value={form.alamat} onChange={(e) => update('alamat', e.target.value)} />
+          </div>
+
+          <div className="row">
+            <div className="field">
+              <label>RT</label>
+              <input value={form.rt} onChange={(e) => update('rt', e.target.value)} />
+            </div>
+            <div className="field">
+              <label>RW</label>
+              <input value={form.rw} onChange={(e) => update('rw', e.target.value)} />
+            </div>
+          </div>
+
+          <div className="row">
+            <div className="field">
+              <label>Agama</label>
+              <input value={form.agama} onChange={(e) => update('agama', e.target.value)} />
+            </div>
+            <div className="field">
+              <label>Status Perkawinan</label>
+              <select value={form.status_perkawinan} onChange={(e) => update('status_perkawinan', e.target.value)}>
+                <option>Belum Kawin</option>
+                <option>Kawin</option>
+                <option>Cerai Hidup</option>
+                <option>Cerai Mati</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="field">
+            <label>Pekerjaan</label>
+            <input value={form.pekerjaan} onChange={(e) => update('pekerjaan', e.target.value)} />
           </div>
           <div className="field">
-            <label>RW</label>
-            <input value={form.rw} onChange={(e) => update('rw', e.target.value)} />
+            <label>No. Telepon (opsional)</label>
+            <input value={form.no_telepon} onChange={(e) => update('no_telepon', e.target.value)} />
           </div>
-        </div>
 
-        <div className="row">
-          <div className="field">
-            <label>Agama</label>
-            <input value={form.agama} onChange={(e) => update('agama', e.target.value)} />
+          <div className="field" style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+            <input type="checkbox" id="setuju" style={{ width: 'auto', marginTop: 3 }}
+              checked={setuju} onChange={(e) => setSetuju(e.target.checked)} />
+            <label htmlFor="setuju" style={{ marginBottom: 0, fontWeight: 400 }}>
+              Saya menyetujui data ini digunakan untuk keperluan administrasi kependudukan RT/RW.
+            </label>
           </div>
-          <div className="field">
-            <label>Status Perkawinan</label>
-            <select value={form.status_perkawinan} onChange={(e) => update('status_perkawinan', e.target.value)}>
-              <option>Belum Kawin</option>
-              <option>Kawin</option>
-              <option>Cerai Hidup</option>
-              <option>Cerai Mati</option>
-            </select>
-          </div>
-        </div>
 
-        <div className="field">
-          <label>Pekerjaan</label>
-          <input value={form.pekerjaan} onChange={(e) => update('pekerjaan', e.target.value)} />
-        </div>
-        <div className="field">
-          <label>No. Telepon (opsional)</label>
-          <input value={form.no_telepon} onChange={(e) => update('no_telepon', e.target.value)} />
-        </div>
+          <button className="btn" type="submit" disabled={submitting}>
+            {submitting ? 'Mendaftarkan...' : 'Daftar'}
+          </button>
+        </form>
 
-        <div className="field" style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-          <input type="checkbox" id="setuju" style={{ width: 'auto', marginTop: 3 }}
-            checked={setuju} onChange={(e) => setSetuju(e.target.checked)} />
-          <label htmlFor="setuju" style={{ marginBottom: 0, fontWeight: 400 }}>
-            Saya menyetujui data ini digunakan untuk keperluan administrasi kependudukan RT/RW.
-          </label>
-        </div>
-
-        <button className="btn" type="submit" disabled={submitting}>
-          {submitting ? 'Mendaftarkan...' : 'Daftar'}
-        </button>
-      </form>
-
-      <p className="muted" style={{ textAlign: 'center' }}>
-        Sudah punya akun? <Link to="/login">Masuk di sini</Link>
-      </p>
-    </div>
+        <p className="muted" style={{ textAlign: 'center' }}>
+          Sudah punya akun? <Link to="/login">Masuk di sini</Link>
+        </p>
+      </div>
+      <AppFooter />
+    </>
   )
 }
+

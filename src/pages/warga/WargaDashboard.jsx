@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import TopBar from '../../components/TopBar'
+import AppFooter from '../../components/AppFooter'
 import { useAuth } from '../../contexts/AuthContext'
 import ProfilTab from './ProfilTab'
 import DokumenTab from './DokumenTab'
@@ -29,7 +30,7 @@ export default function WargaDashboard() {
         {tab === 'keluarga' && <KeluargaTab profile={profile} />}
         {tab === 'dokumen' && <DokumenTab profile={profile} />}
       </div>
-      <footer className="app-footer">SIWARGA — Sistem Informasi Warga</footer>
+      <AppFooter />
     </div>
   )
 }

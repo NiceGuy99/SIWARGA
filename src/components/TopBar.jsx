@@ -14,9 +14,13 @@ export default function TopBar({ subtitle }) {
     <div className="topbar">
       <div className="topbar-title">
         <strong>SIWARGA</strong>
+        <span style={{ fontSize: '10px', opacity: 0.65, letterSpacing: '0.4px' }}>
+          Permata Jaya Krian
+        </span>
         <span>{subtitle || profile?.nama_lengkap || ''}</span>
       </div>
       <button className="link" onClick={handleLogout}>Keluar</button>
     </div>
   )
 }
+
