@@ -46,6 +46,7 @@ export default function Login() {
           <div className="brand-mark">SW</div>
           <div>
             <h1 style={{ marginBottom: 0 }}>SIWARGA</h1>
+            <h2 style={{ marginBottom: 0 }}> Sistem Informasi Warga</h2>
             <p className="muted" style={{ margin: 0 }}>Permata Jaya Krian</p>
           </div>
         </div>
