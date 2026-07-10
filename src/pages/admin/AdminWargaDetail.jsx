@@ -52,7 +52,7 @@ export default function AdminWargaDetail() {
     }
     setSaving(true)
     setMessage('')
-    const { error: updErr } = await supabase.from('profiles').update({
+    const { data, error: updErr } = await supabase.from('profiles').update({
       nik: form.nik,
       nama_lengkap: form.nama_lengkap,
       no_kk: form.no_kk,
@@ -68,9 +68,12 @@ export default function AdminWargaDetail() {
       hubungan_keluarga: form.hubungan_keluarga,
       no_telepon: form.no_telepon,
       role: form.role
-    }).eq('id', id)
+    }).eq('id', id).select()
     setSaving(false)
-    if (updErr) { setMessage('Gagal menyimpan: ' + updErr.message); return }
+    if (updErr || !data || data.length === 0) {
+      setMessage('Gagal menyimpan: ' + (updErr?.message || 'Anda tidak memiliki izin atau data tidak ditemukan.'))
+      return
+    }
     setMessage('Data warga berhasil diperbarui.')
     load()
   }

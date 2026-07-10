@@ -30,10 +30,10 @@ export default function ProfilTab({ profile, onUpdated }) {
     e.preventDefault()
     setSaving(true)
     setMessage('')
-    const { error } = await supabase.from('profiles').update(form).eq('id', profile.id)
+    const { data, error } = await supabase.from('profiles').update(form).eq('id', profile.id).select()
     setSaving(false)
-    if (error) {
-      setMessage('Gagal menyimpan: ' + error.message)
+    if (error || !data || data.length === 0) {
+      setMessage('Gagal menyimpan: ' + (error?.message || 'Anda tidak memiliki izin atau data tidak ditemukan.'))
       return
     }
     setEditing(false)
@@ -65,7 +65,18 @@ export default function ProfilTab({ profile, onUpdated }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h3>Data Diri</h3>
           {!editing && (
-            <button className="btn secondary small" onClick={() => setEditing(true)}>Ubah</button>
+            <button className="btn secondary small" onClick={() => {
+              setForm({
+                alamat: profile.alamat || '',
+                rt: profile.rt || '',
+                rw: profile.rw || '',
+                agama: profile.agama || '',
+                status_perkawinan: profile.status_perkawinan || '',
+                pekerjaan: profile.pekerjaan || '',
+                no_telepon: profile.no_telepon || ''
+              })
+              setEditing(true)
+            }}>Ubah</button>
           )}
         </div>
         <div className="spacer" />

@@ -123,10 +123,24 @@ create policy "anggota_keluarga_update_admin"
   on public.anggota_keluarga for update
   using (public.is_admin());
 
+drop policy if exists "anggota_keluarga_update_owner" on public.anggota_keluarga;
+create policy "anggota_keluarga_update_owner"
+  on public.anggota_keluarga for update
+  using (
+    didaftarkan_oleh = auth.uid()
+    and public.is_my_profile_verified()
+  )
+  with check (
+    didaftarkan_oleh = auth.uid()
+    and status_verifikasi = 'pending'
+    and catatan_admin is null
+  );
+
 drop policy if exists "anggota_keluarga_delete_admin" on public.anggota_keluarga;
 create policy "anggota_keluarga_delete_admin"
   on public.anggota_keluarga for delete
   using (public.is_admin());
+
 
 -- ---------------------------------------------------------
 -- 3. FUNGSI BANTUAN

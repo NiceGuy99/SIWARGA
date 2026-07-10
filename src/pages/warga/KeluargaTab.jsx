@@ -170,7 +170,7 @@ export default function KeluargaTab({ profile }) {
 
       if (editingMemberId) {
         // Lakukan UPDATE data anggota keluarga
-        const { error: updateError } = await supabase
+        const { data, error: updateError } = await supabase
           .from('anggota_keluarga')
           .update({
             nik: form.nik,
@@ -191,9 +191,13 @@ export default function KeluargaTab({ profile }) {
             catatan_admin: null // Hapus catatan penolakan admin sebelumnya
           })
           .eq('id', editingMemberId)
+          .select()
 
         if (updateError) {
           throw updateError
+        }
+        if (!data || data.length === 0) {
+          throw new Error('Gagal memperbarui data: Anda tidak memiliki izin atau data tidak ditemukan.')
         }
         setSuccess('Perubahan data anggota keluarga berhasil diajukan! Menunggu verifikasi dari admin RT/RW.')
       } else {
