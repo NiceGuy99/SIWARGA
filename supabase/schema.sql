@@ -127,11 +127,11 @@ drop policy if exists "anggota_keluarga_update_owner" on public.anggota_keluarga
 create policy "anggota_keluarga_update_owner"
   on public.anggota_keluarga for update
   using (
-    didaftarkan_oleh = auth.uid()
+    no_kk = public.get_my_no_kk()
     and public.is_my_profile_verified()
   )
   with check (
-    didaftarkan_oleh = auth.uid()
+    no_kk = public.get_my_no_kk()
     and status_verifikasi = 'pending'
     and catatan_admin is null
   );
