@@ -21,6 +21,7 @@ export default function KeluargaTab({ profile }) {
   // State khusus Famili Lain
   const [tergabungKK, setTergabungKK] = useState(true)
   const [ktpFile, setKtpFile] = useState(null)
+  const [editingMemberId, setEditingMemberId] = useState(null)
 
   const initialForm = {
     nik: '',
@@ -73,6 +74,42 @@ export default function KeluargaTab({ profile }) {
     setForm((f) => ({ ...f, [field]: value }))
   }
 
+  function handleEditClick(member) {
+    setForm({
+      nik: member.nik || '',
+      nama_lengkap: member.nama_lengkap || '',
+      jenis_kelamin: member.jenis_kelamin || 'Laki-laki',
+      tempat_lahir: member.tempat_lahir || '',
+      tanggal_lahir: member.tanggal_lahir || '',
+      alamat: member.alamat || '',
+      rt: member.rt || '',
+      rw: member.rw || '',
+      agama: member.agama || '',
+      status_perkawinan: member.status_perkawinan || 'Belum Kawin',
+      pekerjaan: member.pekerjaan || '',
+      hubungan_keluarga: member.hubungan_keluarga || 'Anak',
+      no_telepon: member.no_telepon || ''
+    })
+    setEditingMemberId(member.id)
+    setTergabungKK(!member.ktp_file_path)
+    setKtpFile(null)
+    setShowAddForm(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function handleCancel() {
+    setForm({
+      ...initialForm,
+      alamat: profile?.alamat || '',
+      rt: profile?.rt || '',
+      rw: profile?.rw || ''
+    })
+    setEditingMemberId(null)
+    setTergabungKK(true)
+    setKtpFile(null)
+    setShowAddForm(false)
+  }
+
   function validate() {
     if (!/^\d{16}$/.test(form.nik)) return 'NIK harus terdiri dari 16 digit angka.'
     if (!form.nama_lengkap.trim()) return 'Nama lengkap wajib diisi.'
@@ -81,9 +118,13 @@ export default function KeluargaTab({ profile }) {
 
     // Validasi file KTP jika Famili Lain & tidak satu KK
     if (form.hubungan_keluarga === 'Famili Lain' && !tergabungKK) {
-      if (!ktpFile) return 'File KTP wajib diunggah untuk Famili Lain yang tidak terdaftar dalam satu KK.'
-      const check = isValidFile(ktpFile)
-      if (!check.ok) return check.message
+      const oldKtpPath = editingMemberId ? allMembers.find(m => m.id === editingMemberId)?.ktp_file_path : null
+      if (!ktpFile && !oldKtpPath) return 'File KTP wajib diunggah untuk Famili Lain yang tidak terdaftar dalam satu KK.'
+      
+      if (ktpFile) {
+        const check = isValidFile(ktpFile)
+        if (!check.ok) return check.message
+      }
     }
 
     return ''
@@ -103,56 +144,92 @@ export default function KeluargaTab({ profile }) {
     setSubmitting(true)
 
     try {
-      let ktpPath = null
+      let ktpPath = editingMemberId ? allMembers.find(m => m.id === editingMemberId)?.ktp_file_path : null
 
-      // Upload KTP terlebih dahulu jika Famili Lain beda KK
-      if (form.hubungan_keluarga === 'Famili Lain' && !tergabungKK && ktpFile) {
-        const compressed = await compressImage(ktpFile)
-        const ext = compressed.type === 'application/pdf' ? 'pdf' : 'jpg'
-        // Simpan di folder milik pendaftar agar sesuai storage policy
-        const path = `${profile.id}/keluarga-ktp-${form.nik}.${ext}`
+      // Upload KTP terlebih dahulu jika Famili Lain beda KK dan ada berkas baru yang diunggah
+      if (form.hubungan_keluarga === 'Famili Lain' && !tergabungKK) {
+        if (ktpFile) {
+          const compressed = await compressImage(ktpFile)
+          const ext = compressed.type === 'application/pdf' ? 'pdf' : 'jpg'
+          // Simpan di folder milik pendaftar agar sesuai storage policy
+          const path = `${profile.id}/keluarga-ktp-${form.nik}.${ext}`
 
-        const { error: uploadError } = await supabase.storage
-          .from(DOKUMEN_BUCKET)
-          .upload(path, compressed, { upsert: true, contentType: compressed.type })
+          const { error: uploadError } = await supabase.storage
+            .from(DOKUMEN_BUCKET)
+            .upload(path, compressed, { upsert: true, contentType: compressed.type })
 
-        if (uploadError) {
-          throw new Error('Gagal mengunggah berkas KTP: ' + uploadError.message)
+          if (uploadError) {
+            throw new Error('Gagal mengunggah berkas KTP: ' + uploadError.message)
+          }
+          ktpPath = path
         }
-        ktpPath = path
+      } else {
+        // Jika statusnya bukan Famili Lain atau satu KK, hapus path KTP
+        ktpPath = null
       }
 
-      // Simpan data anggota keluarga langsung ke database (TANPA signUp)
-      const { error: insertError } = await supabase.from('anggota_keluarga').insert({
-        didaftarkan_oleh: profile.id,
-        no_kk: profile.no_kk,
-        nik: form.nik,
-        nama_lengkap: form.nama_lengkap.trim(),
-        jenis_kelamin: form.jenis_kelamin,
-        tempat_lahir: form.tempat_lahir.trim(),
-        tanggal_lahir: form.tanggal_lahir,
-        alamat: form.alamat.trim(),
-        rt: form.rt.trim(),
-        rw: form.rw.trim(),
-        agama: form.agama.trim(),
-        status_perkawinan: form.status_perkawinan,
-        pekerjaan: form.pekerjaan.trim(),
-        hubungan_keluarga: form.hubungan_keluarga,
-        no_telepon: form.no_telepon.trim(),
-        ktp_file_path: ktpPath
-      })
+      if (editingMemberId) {
+        // Lakukan UPDATE data anggota keluarga
+        const { error: updateError } = await supabase
+          .from('anggota_keluarga')
+          .update({
+            nik: form.nik,
+            nama_lengkap: form.nama_lengkap.trim(),
+            jenis_kelamin: form.jenis_kelamin,
+            tempat_lahir: form.tempat_lahir.trim(),
+            tanggal_lahir: form.tanggal_lahir,
+            alamat: form.alamat.trim(),
+            rt: form.rt.trim(),
+            rw: form.rw.trim(),
+            agama: form.agama.trim(),
+            status_perkawinan: form.status_perkawinan,
+            pekerjaan: form.pekerjaan.trim(),
+            hubungan_keluarga: form.hubungan_keluarga,
+            no_telepon: form.no_telepon.trim(),
+            ktp_file_path: ktpPath,
+            status_verifikasi: 'pending', // Reset status verifikasi saat diedit
+            catatan_admin: null // Hapus catatan penolakan admin sebelumnya
+          })
+          .eq('id', editingMemberId)
 
-      if (insertError) {
-        throw insertError
+        if (updateError) {
+          throw updateError
+        }
+        setSuccess('Perubahan data anggota keluarga berhasil diajukan! Menunggu verifikasi dari admin RT/RW.')
+      } else {
+        // Simpan data anggota keluarga langsung ke database (TANPA signUp)
+        const { error: insertError } = await supabase.from('anggota_keluarga').insert({
+          didaftarkan_oleh: profile.id,
+          no_kk: profile.no_kk,
+          nik: form.nik,
+          nama_lengkap: form.nama_lengkap.trim(),
+          jenis_kelamin: form.jenis_kelamin,
+          tempat_lahir: form.tempat_lahir.trim(),
+          tanggal_lahir: form.tanggal_lahir,
+          alamat: form.alamat.trim(),
+          rt: form.rt.trim(),
+          rw: form.rw.trim(),
+          agama: form.agama.trim(),
+          status_perkawinan: form.status_perkawinan,
+          pekerjaan: form.pekerjaan.trim(),
+          hubungan_keluarga: form.hubungan_keluarga,
+          no_telepon: form.no_telepon.trim(),
+          ktp_file_path: ktpPath
+        })
+
+        if (insertError) {
+          throw insertError
+        }
+        setSuccess('Anggota keluarga berhasil diajukan! Menunggu verifikasi dari admin RT/RW.')
       }
 
-      setSuccess('Anggota keluarga berhasil diajukan! Menunggu verifikasi dari admin RT/RW.')
       setForm({
         ...initialForm,
         alamat: profile.alamat || '',
         rt: profile.rt || '',
         rw: profile.rw || ''
       })
+      setEditingMemberId(null)
       setTergabungKK(true)
       setKtpFile(null)
       setShowAddForm(false)
@@ -213,12 +290,12 @@ export default function KeluargaTab({ profile }) {
       {showAddForm && (
         <form className="card" onSubmit={handleSubmit} style={{ border: '1px solid var(--accent)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h3 style={{ margin: 0 }}>Form Anggota Keluarga Baru</h3>
-            <button type="button" className="btn secondary small" onClick={() => setShowAddForm(false)}>Batal</button>
+            <h3 style={{ margin: 0 }}>{editingMemberId ? 'Form Edit Anggota Keluarga' : 'Form Anggota Keluarga Baru'}</h3>
+            <button type="button" className="btn secondary small" onClick={handleCancel}>Batal</button>
           </div>
 
           <div className="field">
-            <label>NIK Anggota Baru (16 digit)</label>
+            <label>{editingMemberId ? 'NIK (16 digit)' : 'NIK Anggota Baru (16 digit)'}</label>
             <input
               inputMode="numeric"
               maxLength={16}
@@ -398,7 +475,7 @@ export default function KeluargaTab({ profile }) {
           </div>
 
           <button className="btn" type="submit" disabled={submitting}>
-            {submitting ? 'Menyimpan...' : 'Ajukan Anggota Keluarga'}
+            {submitting ? 'Menyimpan...' : editingMemberId ? 'Simpan Perubahan' : 'Ajukan Anggota Keluarga'}
           </button>
         </form>
       )}
@@ -428,8 +505,18 @@ export default function KeluargaTab({ profile }) {
                 Lahir: {member.tempat_lahir || '-'}, {formatTanggal(member.tanggal_lahir)}
               </div>
             </div>
-            <div style={{ flexShrink: 0, textAlign: 'right' }}>
+            <div style={{ flexShrink: 0, textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
               <StatusBadge status={member.status_verifikasi} />
+              {member._source === 'anggota' && isVerified && (
+                <button
+                  type="button"
+                  className="btn secondary small"
+                  style={{ padding: '4px 8px', fontSize: '12px', width: 'auto' }}
+                  onClick={() => handleEditClick(member)}
+                >
+                  Edit
+                </button>
+              )}
             </div>
           </div>
         ))}
