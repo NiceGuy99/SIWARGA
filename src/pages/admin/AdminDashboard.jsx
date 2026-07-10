@@ -138,7 +138,7 @@ export default function AdminDashboard() {
 
     return Object.values(families).map(fam => {
       fam.members.sort((a, b) => {
-        const order = { 'Kepala Keluarga': 1, 'Istri': 2, 'Anak': 3, 'Famili Lain': 4 }
+        const order = { 'Kepala Keluarga': 1, 'Istri': 2, 'Anak': 3, 'Cucu': 4, 'Famili Lain': 5 }
         return (order[a.hubungan_keluarga] || 99) - (order[b.hubungan_keluarga] || 99)
       })
 
@@ -283,7 +283,7 @@ export default function AdminDashboard() {
       // Urutkan berdasarkan No. KK lalu hubungan keluarga
       combined.sort((a, b) => {
         if (a.no_kk !== b.no_kk) return a.no_kk.localeCompare(b.no_kk)
-        const order = { 'Kepala Keluarga': 1, 'Istri': 2, 'Anak': 3, 'Famili Lain': 4 }
+        const order = { 'Kepala Keluarga': 1, 'Istri': 2, 'Anak': 3, 'Cucu': 4, 'Famili Lain': 5 }
         return (order[a.hubungan_keluarga] || 99) - (order[b.hubungan_keluarga] || 99)
       })
 
@@ -616,6 +616,7 @@ export default function AdminDashboard() {
                     <option>Kepala Keluarga</option>
                     <option>Istri</option>
                     <option>Anak</option>
+                    <option>Cucu</option>
                     <option>Famili Lain</option>
                   </select>
                 </div>

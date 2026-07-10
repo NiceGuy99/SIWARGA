@@ -252,6 +252,7 @@ export default function KeluargaTab({ profile }) {
               <select value={form.hubungan_keluarga} onChange={(e) => update('hubungan_keluarga', e.target.value)}>
                 <option>Istri</option>
                 <option>Anak</option>
+                <option>Cucu</option>
                 <option>Famili Lain</option>
                 <option>Kepala Keluarga</option>
               </select>

@@ -48,7 +48,7 @@ export default function AdminReport() {
         if (a.no_kk !== b.no_kk) return a.no_kk.localeCompare(b.no_kk)
 
         // Hubungan keluarga order helper
-        const order = { 'Kepala Keluarga': 1, 'Istri': 2, 'Anak': 3, 'Famili Lain': 4 }
+        const order = { 'Kepala Keluarga': 1, 'Istri': 2, 'Anak': 3, 'Cucu': 4, 'Famili Lain': 5 }
         const orderA = order[a.hubungan_keluarga] || 99
         const orderB = order[b.hubungan_keluarga] || 99
         return orderA - orderB

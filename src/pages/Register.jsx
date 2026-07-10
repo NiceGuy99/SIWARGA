@@ -175,6 +175,7 @@ export default function Register() {
                 <option>Kepala Keluarga</option>
                 <option>Istri</option>
                 <option>Anak</option>
+                <option>Cucu</option>
                 <option>Famili Lain</option>
               </select>
             </div>
