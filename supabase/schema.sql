@@ -562,8 +562,7 @@ begin
     raw_app_meta_data,
     raw_user_meta_data,
     created_at,
-    updated_at,
-    is_sso_user
+    updated_at
   )
   values (
     gen_random_uuid(),
@@ -576,8 +575,7 @@ begin
     '{"provider":"email","providers":["email"]}'::jsonb,
     '{}'::jsonb,
     now(),
-    now(),
-    false
+    now()
   )
   returning id into v_user_id;
 
